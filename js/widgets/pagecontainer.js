@@ -475,7 +475,7 @@ define( [
 			return $.proxy(function( html, textStatus, xhr ) {
 				//pre-parse html to check for a data-url,
 				//use it as the new fileUrl, base path, etc
-				var content, loadEvent,
+				var content, loadEvent, beforeIncludeEvent,
 
 					// TODO handle dialogs again
 					pageElemRegex = new RegExp( "(<[^>]+\\bdata-" + this._getNs() + "role=[\"']?page[\"']?[^>]*>)" ),
@@ -506,6 +506,27 @@ define( [
 					this._getBase().rewrite( fileUrl, content );
 				}
 
+				// Add the content reference and xhr to our triggerData.
+				triggerData.xhr = xhr;
+				triggerData.textStatus = textStatus;
+
+				// DEPRECATED
+				triggerData.page = content;
+
+				triggerData.content = content;
+
+				// Let listeners know the content loaded successfully.
+				beforeIncludeEvent = this._triggerWithDeprecated( "beforeinclude", triggerData );
+
+				// If the default behavior is prevented, stop here!
+				// Note that it is the responsibility of the listener/handler
+				// that called preventDefault(), to resolve/reject the
+				// deferred object within the triggerData.
+				if ( beforeIncludeEvent.deprecatedEvent.isDefaultPrevented() ||
+					beforeIncludeEvent.event.isDefaultPrevented() ) {
+					return;
+				}
+
 				this._include( content, settings );
 
 				// Enhancing the content may result in new dialogs/sub content being inserted
@@ -519,15 +540,6 @@ define( [
 				if ( settings.showLoadMsg ) {
 					this._hideLoading();
 				}
-
-				// Add the content reference and xhr to our triggerData.
-				triggerData.xhr = xhr;
-				triggerData.textStatus = textStatus;
-
-				// DEPRECATED
-				triggerData.page = content;
-
-				triggerData.content = content;
 
 				// Let listeners know the content loaded successfully.
 				loadEvent = this._triggerWithDeprecated( "load", triggerData );
