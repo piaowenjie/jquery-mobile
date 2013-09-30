@@ -475,7 +475,7 @@ define( [
 			return $.proxy(function( html, textStatus, xhr ) {
 				//pre-parse html to check for a data-url,
 				//use it as the new fileUrl, base path, etc
-				var content,
+				var content, loadEvent,
 
 					// TODO handle dialogs again
 					pageElemRegex = new RegExp( "(<[^>]+\\bdata-" + this._getNs() + "role=[\"']?page[\"']?[^>]*>)" ),
@@ -530,7 +530,16 @@ define( [
 				triggerData.content = content;
 
 				// Let listeners know the content loaded successfully.
-				this._triggerWithDeprecated( "load", triggerData );
+				loadEvent = this._triggerWithDeprecated( "load", triggerData );
+
+				// If the default behavior is prevented, stop here!
+				// Note that it is the responsibility of the listener/handler
+				// that called preventDefault(), to resolve/reject the
+				// deferred object within the triggerData.
+				if ( loadEvent.deprecatedEvent.isDefaultPrevented() ||
+					loadEvent.event.isDefaultPrevented() ) {
+					return;
+				}
 
 				deferred.resolve( absUrl, settings, content );
 			}, this);
