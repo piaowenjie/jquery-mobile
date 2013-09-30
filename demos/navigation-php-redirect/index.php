@@ -12,7 +12,7 @@
 	<script src="../_assets/js/"></script>
 	<script src="../../js/"></script>
 	<script id="redirectCode">
-	$( document ).bind( "pagecontainerload", function( e, triggerData ) {
+	$( document ).bind( "pagecontainerbeforeinclude", function( e, triggerData ) {
 
 		// We can use this event to recognize that this is a redirect. The event is
 		// triggered when jQuery Mobile has finished loading a page and inserting
@@ -36,7 +36,6 @@
 			// deferred governing this page change process. We must also prevent the
 			// default on this event so that the page change process continues with
 			// the desired page.
-			triggerData.page.remove();
 			$( e.target ).pagecontainer( "load", redirect, triggerData.options );
 			e.preventDefault();
 		}
